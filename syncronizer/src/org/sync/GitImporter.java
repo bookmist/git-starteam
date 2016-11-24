@@ -214,10 +214,21 @@ public class GitImporter {
 			if (!dontTryServerAdministrationAgain) {
 				try {
 					UserAccount userAccount = server.getAdministration().findUserAccount(current.getUid());
-					userName = userAccount.getName();
-					userEmail = userAccount.getEmailAddress();
+					if (null == userAccount){
+						Log.log("Could not retrieve user from Administration Server. User probably deleted");
+						User user = server.getUser(current.getUid());
+						userName = user.getName();
+						userEmail = userMapping.getEmail(userName);
+						
+					} else {
+						userName = userAccount.getName();
+						userEmail = userAccount.getEmailAddress();
+					}
 				} catch (ServerException ex) {
 					Log.log("Could not retrieve user from Administration Server. You probably do not have the right");
+					dontTryServerAdministrationAgain = true;
+				} catch (NullPointerException ex) {
+					Log.log("Could not retrieve user from Administration Server. You probably do not have this feature");
 					dontTryServerAdministrationAgain = true;
 				}
 			}
